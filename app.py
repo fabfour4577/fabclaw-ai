@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from collections import defaultdict
 import os
 import redis
+import json
 from openai import OpenAI
 
 app = FastAPI()
@@ -14,9 +14,6 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 redis_url = os.getenv("REDIS_URL")
 
 r = redis.from_url(redis_url, decode_responses=True)
-
-# Simple in-memory memory store
-memory = defaultdict(list)
 
 # Request model
 class ChatRequest(BaseModel):
@@ -42,8 +39,13 @@ def redis_test():
 @app.post("/chat")
 def chat(request: ChatRequest):
     try:
-        # Get user history
-        history = memory[request.user_id]
+        # Load user history from Redis
+        history_json = r.get(request.user_id)
+
+        if history_json:
+            history = json.loads(history_json)
+        else:
+            history = []
 
         # Add user message
         history.append({
@@ -70,6 +72,9 @@ def chat(request: ChatRequest):
             "role": "assistant",
             "content": ai_reply
         })
+
+        # Save updated conversation back to Redis
+        r.set(request.user_id, json.dumps(history))
 
         return {
             "user_id": request.user_id,
