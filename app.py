@@ -2,12 +2,18 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from collections import defaultdict
 import os
+import redis
 from openai import OpenAI
 
 app = FastAPI()
 
 # OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+# Redis connection
+redis_url = os.getenv("REDIS_URL")
+
+r = redis.from_url(redis_url, decode_responses=True)
 
 # Simple in-memory memory store
 memory = defaultdict(list)
@@ -23,6 +29,16 @@ def root():
     return {"status": "Fabclaw AI running 🚀"}
 
 
+# Redis test endpoint
+@app.get("/redis-test")
+def redis_test():
+    r.set("test_key", "hello")
+
+    value = r.get("test_key")
+
+    return {"value": value}
+
+
 @app.post("/chat")
 def chat(request: ChatRequest):
     try:
@@ -30,13 +46,19 @@ def chat(request: ChatRequest):
         history = memory[request.user_id]
 
         # Add user message
-        history.append({"role": "user", "content": request.message})
+        history.append({
+            "role": "user",
+            "content": request.message
+        })
 
         # Call OpenAI with conversation history
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "You are Fabclaw AI, a helpful assistant."},
+                {
+                    "role": "system",
+                    "content": "You are Fabclaw AI, a helpful assistant."
+                },
                 *history
             ]
         )
@@ -44,7 +66,10 @@ def chat(request: ChatRequest):
         ai_reply = response.choices[0].message.content
 
         # Save assistant reply
-        history.append({"role": "assistant", "content": ai_reply})
+        history.append({
+            "role": "assistant",
+            "content": ai_reply
+        })
 
         return {
             "user_id": request.user_id,
