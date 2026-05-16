@@ -89,7 +89,6 @@ def clean_history(history):
             cleaned.append(msg)
     return cleaned[-MAX_HISTORY:]
 
-
 # ============================================
 # SESSION REGISTRY
 # ============================================
@@ -123,7 +122,6 @@ def add_session(user_id: str, session_id: str):
     save_sessions(user_id, sessions)
     return sessions
 
-
 # ============================================
 # ROOT
 # ============================================
@@ -131,7 +129,6 @@ def add_session(user_id: str, session_id: str):
 @app.get("/")
 def root():
     return {"status": "Fabclaw AI session system running 🚀"}
-
 
 # ============================================
 # REDIS TEST
@@ -141,7 +138,6 @@ def root():
 def redis_test():
     r.set("test_key", "hello")
     return {"value": r.get("test_key")}
-
 
 # ============================================
 # CHAT ENDPOINT
@@ -154,8 +150,13 @@ def chat(request: ChatRequest):
         history = load_history(request.user_id, request.session_id)
         history = clean_history(history)
 
-        # Register session
-        add_session(request.user_id, request.session_id)
+        # Optional safety: ensure session exists for this user
+        sessions = get_sessions(request.user_id)
+        if request.session_id not in sessions:
+            add_session(request.user_id, request.session_id)
+
+        # Debug log (optional)
+        print(f"[CHAT] user={request.user_id} session={request.session_id} message={request.message}")
 
         # Add user message
         history.append({
@@ -190,12 +191,11 @@ def chat(request: ChatRequest):
         return {
             "user_id": request.user_id,
             "session_id": request.session_id,
-            "reply": ai_reply   # ✅ FIXED FOR FRONTEND
+            "reply": ai_reply
         }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 # ============================================
 # HISTORY
@@ -213,13 +213,11 @@ def history(user_id: str, session_id: str):
 @app.delete("/history/{user_id}/{session_id}")
 def clear_history(user_id: str, session_id: str):
     deleted = r.delete(chat_key(user_id, session_id))
-
     return {
         "user_id": user_id,
         "session_id": session_id,
         "deleted": deleted == 1
     }
-
 
 # ============================================
 # SESSIONS
@@ -236,15 +234,12 @@ def list_sessions(user_id: str):
 @app.post("/sessions/{user_id}")
 def create_session(user_id: str):
     new_session = str(uuid.uuid4())[:8]
-
     sessions = add_session(user_id, new_session)
-
     return {
         "user_id": user_id,
         "session_id": new_session,
         "sessions": sessions
     }
-
 
 # ============================================
 # DEBUG
@@ -257,14 +252,12 @@ def debug_memory(user_id: str, session_id: str):
         "history": load_history(user_id, session_id)
     }
 
-
 @app.get("/debug/sessions/{user_id}")
 def debug_sessions(user_id: str):
     return {
         "user_id": user_id,
         "sessions": get_sessions(user_id)
     }
-
 
 @app.get("/debug/keys")
 def debug_keys():
