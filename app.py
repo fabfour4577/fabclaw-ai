@@ -114,6 +114,18 @@ def history(user_id: str):
         "history": load_history(user_id)
     }
 
+@app.delete("/history/{user_id}")
+def clear_history(user_id: str):
+    key = f"chat:{user_id}"
+
+    deleted = r.delete(key)
+
+    return {
+        "user_id": user_id,
+        "status": "cleared",
+        "deleted": bool(deleted)
+    }
+
 @app.post("/chat")
 def chat(request: ChatRequest):
     try:
