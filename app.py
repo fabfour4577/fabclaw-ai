@@ -1,6 +1,8 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from openai import OpenAI
+
 import redis
 import os
 import json
@@ -61,25 +63,35 @@ def load_history(user_id: str, session_id: str):
     key = chat_key(user_id, session_id)
 
     data = r.get(key)
+
     if not data:
         return []
 
     try:
         history = json.loads(data)
+
         if isinstance(history, list):
             return history
+
         return []
+
     except:
         return []
 
 
 def save_history(user_id: str, session_id: str, history):
     key = chat_key(user_id, session_id)
-    r.set(key, json.dumps(history), ex=MEMORY_TTL)
+
+    r.set(
+        key,
+        json.dumps(history),
+        ex=MEMORY_TTL
+    )
 
 
 def clean_history(history):
     cleaned = []
+
     for msg in history:
         if (
             isinstance(msg, dict)
@@ -87,6 +99,7 @@ def clean_history(history):
             and isinstance(msg.get("content"), str)
         ):
             cleaned.append(msg)
+
     return cleaned[-MAX_HISTORY:]
 
 # ============================================
@@ -99,18 +112,24 @@ def session_index_key(user_id: str):
 
 def get_sessions(user_id: str):
     data = r.get(session_index_key(user_id))
+
     if not data:
         return []
 
     try:
         sessions = json.loads(data)
+
         return sessions if isinstance(sessions, list) else []
+
     except:
         return []
 
 
 def save_sessions(user_id: str, sessions):
-    r.set(session_index_key(user_id), json.dumps(sessions))
+    r.set(
+        session_index_key(user_id),
+        json.dumps(sessions)
+    )
 
 
 def add_session(user_id: str, session_id: str):
@@ -120,6 +139,7 @@ def add_session(user_id: str, session_id: str):
         sessions.append(session_id)
 
     save_sessions(user_id, sessions)
+
     return sessions
 
 # ============================================
@@ -128,7 +148,9 @@ def add_session(user_id: str, session_id: str):
 
 @app.get("/")
 def root():
-    return {"status": "Fabclaw AI session system running 🚀"}
+    return {
+        "status": "Fabclaw AI session system running 🚀"
+    }
 
 # ============================================
 # REDIS TEST
@@ -137,26 +159,41 @@ def root():
 @app.get("/redis-test")
 def redis_test():
     r.set("test_key", "hello")
-    return {"value": r.get("test_key")}
+
+    return {
+        "value": r.get("test_key")
+    }
 
 # ============================================
-# CHAT ENDPOINT
+# NORMAL CHAT ENDPOINT
 # ============================================
 
 @app.post("/chat")
 def chat(request: ChatRequest):
+
     try:
-        # Load memory
-        history = load_history(request.user_id, request.session_id)
+        # Load history
+        history = load_history(
+            request.user_id,
+            request.session_id
+        )
+
         history = clean_history(history)
 
-        # Optional safety: ensure session exists for this user
+        # Ensure session exists
         sessions = get_sessions(request.user_id)
-        if request.session_id not in sessions:
-            add_session(request.user_id, request.session_id)
 
-        # Debug log (optional)
-        print(f"[CHAT] user={request.user_id} session={request.session_id} message={request.message}")
+        if request.session_id not in sessions:
+            add_session(
+                request.user_id,
+                request.session_id
+            )
+
+        print(
+            f"[CHAT] "
+            f"user={request.user_id} "
+            f"session={request.session_id}"
+        )
 
         # Add user message
         history.append({
@@ -164,14 +201,16 @@ def chat(request: ChatRequest):
             "content": request.message
         })
 
-        # Trim history
         history = history[-MAX_HISTORY:]
 
-        # OpenAI call
+        # OpenAI request
         response = client.chat.completions.create(
             model=MODEL_NAME,
             messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {
+                    "role": "system",
+                    "content": SYSTEM_PROMPT
+                },
                 *history
             ]
         )
@@ -186,7 +225,11 @@ def chat(request: ChatRequest):
 
         history = history[-MAX_HISTORY:]
 
-        save_history(request.user_id, request.session_id, history)
+        save_history(
+            request.user_id,
+            request.session_id,
+            history
+        )
 
         return {
             "user_id": request.user_id,
@@ -195,7 +238,94 @@ def chat(request: ChatRequest):
         }
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+
+# ============================================
+# STREAMING CHAT ENDPOINT
+# ============================================
+
+@app.post("/chat-stream")
+def chat_stream(request: ChatRequest):
+
+    async def event_generator():
+
+        try:
+            # Load history
+            history = load_history(
+                request.user_id,
+                request.session_id
+            )
+
+            history = clean_history(history)
+
+            # Ensure session exists
+            add_session(
+                request.user_id,
+                request.session_id
+            )
+
+            # Add user message
+            history.append({
+                "role": "user",
+                "content": request.message
+            })
+
+            history = history[-MAX_HISTORY:]
+
+            # Streaming OpenAI request
+            response = client.chat.completions.create(
+                model=MODEL_NAME,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": SYSTEM_PROMPT
+                    },
+                    *history
+                ],
+                stream=True
+            )
+
+            full_reply = ""
+
+            for chunk in response:
+
+                delta = chunk.choices[0].delta
+
+                if delta and delta.content:
+
+                    token = delta.content
+
+                    full_reply += token
+
+                    yield f"data: {token}\n\n"
+
+            # Save assistant response
+            history.append({
+                "role": "assistant",
+                "content": full_reply
+            })
+
+            history = history[-MAX_HISTORY:]
+
+            save_history(
+                request.user_id,
+                request.session_id,
+                history
+            )
+
+            yield "data: [DONE]\n\n"
+
+        except Exception as e:
+
+            yield f"data: ERROR: {str(e)}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream"
+    )
 
 # ============================================
 # HISTORY
@@ -203,16 +333,24 @@ def chat(request: ChatRequest):
 
 @app.get("/history/{user_id}/{session_id}")
 def history(user_id: str, session_id: str):
+
     return {
         "user_id": user_id,
         "session_id": session_id,
-        "history": load_history(user_id, session_id)
+        "history": load_history(
+            user_id,
+            session_id
+        )
     }
 
 
 @app.delete("/history/{user_id}/{session_id}")
 def clear_history(user_id: str, session_id: str):
-    deleted = r.delete(chat_key(user_id, session_id))
+
+    deleted = r.delete(
+        chat_key(user_id, session_id)
+    )
+
     return {
         "user_id": user_id,
         "session_id": session_id,
@@ -225,6 +363,7 @@ def clear_history(user_id: str, session_id: str):
 
 @app.get("/sessions/{user_id}")
 def list_sessions(user_id: str):
+
     return {
         "user_id": user_id,
         "sessions": get_sessions(user_id)
@@ -233,8 +372,14 @@ def list_sessions(user_id: str):
 
 @app.post("/sessions/{user_id}")
 def create_session(user_id: str):
+
     new_session = str(uuid.uuid4())[:8]
-    sessions = add_session(user_id, new_session)
+
+    sessions = add_session(
+        user_id,
+        new_session
+    )
+
     return {
         "user_id": user_id,
         "session_id": new_session,
@@ -247,20 +392,31 @@ def create_session(user_id: str):
 
 @app.get("/debug/memory/{user_id}/{session_id}")
 def debug_memory(user_id: str, session_id: str):
+
     return {
-        "exists": r.get(chat_key(user_id, session_id)) is not None,
-        "history": load_history(user_id, session_id)
+        "exists": r.get(
+            chat_key(user_id, session_id)
+        ) is not None,
+
+        "history": load_history(
+            user_id,
+            session_id
+        )
     }
+
 
 @app.get("/debug/sessions/{user_id}")
 def debug_sessions(user_id: str):
+
     return {
         "user_id": user_id,
         "sessions": get_sessions(user_id)
     }
 
+
 @app.get("/debug/keys")
 def debug_keys():
+
     return {
         "chat_keys": r.keys("chat:*"),
         "session_keys": r.keys("sessions:*")
