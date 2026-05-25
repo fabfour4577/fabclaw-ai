@@ -223,3 +223,9 @@ def debug_keys():
         "chat_keys": r.keys("chat:*"),
         "session_keys": r.keys("sessions:*")
     }
+
+@app.get("/test-redis")
+def test_redis():
+    r.set("ping", "pong")
+    return {"value": r.get("ping")}
+    
