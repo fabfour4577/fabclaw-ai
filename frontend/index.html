@@ -1,350 +1,536 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Fabclaw AI ✨</title> 
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fabclaw AI</title>
 
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script> 
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-<style> 
+<style>
+* {
+    box-sizing: border-box;
+}
 
-/* =========================
-   BASE THEME (GALAXY CORE)
-========================= */
 body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    display: flex;
-    height: 100vh;
-    overflow: hidden;
-    color: white; 
+    margin: 0;
+    height: 100vh;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    color: #fff;
+    background:
+        radial-gradient(circle at top left, rgba(255, 31, 61, .25), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(124, 58, 237, .18), transparent 35%),
+        linear-gradient(135deg, #050509, #090111, #000);
+    display: flex;
+}
 
-    background: radial-gradient(circle at top, #1a0b2e, #05010a, #000);
-} 
-
-/* animated aurora layer */
 body::before {
-    content: "";
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-        120deg,
-        rgba(124,58,237,0.15),
-        rgba(6,182,212,0.1),
-        rgba(255,0,128,0.08)
-    );
-    filter: blur(60px);
-    animation: floatGlow 10s infinite alternate;
-} 
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(120deg, rgba(255, 31, 61, .12), rgba(124, 58, 237, .12), rgba(6, 182, 212, .08));
+    filter: blur(70px);
+    animation: aurora 10s ease-in-out infinite alternate;
+    pointer-events: none;
+}
 
-@keyframes floatGlow {
-    0% { transform: translateY(0px) scale(1); }
-    100% { transform: translateY(-30px) scale(1.1); }
-} 
+@keyframes aurora {
+    from { transform: translateY(0) scale(1); }
+    to { transform: translateY(-35px) scale(1.08); }
+}
 
-/* =========================
-   SIDEBAR
-========================= */
 #sidebar {
-    width: 280px;
-    display: flex;
-    flex-direction: column; 
+    width: 280px;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    padding: 18px 12px;
+    background: rgba(255, 255, 255, .055);
+    border-right: 1px solid rgba(255, 255, 255, .1);
+    backdrop-filter: blur(22px);
+}
 
-    background: rgba(255,255,255,0.04);
-    backdrop-filter: blur(20px);
-    border-right: 1px solid rgba(255,255,255,0.08); 
-
-    z-index: 2;
-} 
-
-/* AI CORE LOGO */
-#logoBox {
-    padding: 20px;
-    text-align: center;
-} 
+#brand {
+    text-align: center;
+    padding: 10px 0 22px;
+}
 
 .logo {
-    width: 70px;
-    height: 70px;
-    border-radius: 20px; 
+    width: 86px;
+    height: 86px;
+    object-fit: cover;
+    border-radius: 50%;
+    animation: breathe 5s ease-in-out infinite;
+    box-shadow:
+        0 0 20px rgba(255, 31, 61, .9),
+        0 0 55px rgba(255, 31, 61, .55),
+        0 0 100px rgba(255, 31, 61, .25);
+}
 
-    box-shadow:
-        0 0 25px rgba(140,90,255,0.8),
-        0 0 60px rgba(0,200,255,0.25); 
+@keyframes breathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+}
 
-    transition: 0.4s ease;
-} 
+#brand h2 {
+    margin: 12px 0 2px;
+    font-size: 18px;
+    letter-spacing: 1.5px;
+}
 
-.logo:hover {
-    transform: scale(1.08) rotate(3deg);
-} 
+#brand p {
+    margin: 0;
+    font-size: 12px;
+    color: rgba(255,255,255,.65);
+}
 
-/* NEW CHAT BUTTON */
 #newChat {
-    margin: 12px;
-    padding: 12px;
-    text-align: center;
-    font-weight: bold; 
+    margin: 6px 0 16px;
+    padding: 13px;
+    text-align: center;
+    border-radius: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    background: linear-gradient(90deg, #ff1f3d, #7c1023);
+    box-shadow: 0 0 24px rgba(255,31,61,.35);
+}
 
-    background: linear-gradient(90deg, #7c3aed, #06b6d4);
-    border-radius: 12px;
-    cursor: pointer; 
+#sessions {
+    overflow-y: auto;
+    padding-bottom: 12px;
+}
 
-    box-shadow: 0 0 18px rgba(124,58,237,0.4);
-} 
-
-/* SESSIONS */
 .session {
-    margin: 6px 10px;
-    padding: 10px;
-    border-radius: 10px; 
+    padding: 11px 12px;
+    margin-bottom: 8px;
+    border-radius: 12px;
+    cursor: pointer;
+    background: rgba(255,255,255,.06);
+    color: rgba(255,255,255,.85);
+    font-size: 14px;
+}
 
-    background: rgba(255,255,255,0.05);
-    cursor: pointer; 
+.session:hover,
+.session.active {
+    background: rgba(255,31,61,.22);
+    transform: translateX(3px);
+}
 
-    transition: 0.2s;
-} 
-
-.session:hover {
-    background: rgba(255,255,255,0.12);
-    transform: translateX(4px);
-} 
-
-/* =========================
-   CHAT AREA
-========================= */
 #chat {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    z-index: 2;
-} 
+    flex: 1;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
 
 #messages {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-} 
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+}
 
-/* USER */
+#welcome {
+    text-align: center;
+    margin-top: 12vh;
+    opacity: .95;
+}
+
+.hero-core {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    animation: breathe 5s ease-in-out infinite;
+    box-shadow:
+        0 0 25px rgba(255,31,61,.9),
+        0 0 80px rgba(255,31,61,.45);
+}
+
+#welcome h1 {
+    margin: 18px 0 6px;
+    font-size: 42px;
+    letter-spacing: 2px;
+}
+
+#welcome p {
+    color: rgba(255,255,255,.7);
+}
+
+.message {
+    max-width: 76%;
+    padding: 13px 15px;
+    margin-bottom: 16px;
+    line-height: 1.55;
+    border-radius: 16px;
+    word-wrap: break-word;
+}
+
 .user {
-    margin-left: auto;
-    max-width: 70%;
-    padding: 12px;
-    border-radius: 14px; 
+    margin-left: auto;
+    background: linear-gradient(90deg, #ff1f3d, #b10024);
+}
 
-    background: linear-gradient(90deg, #3b82f6, #06b6d4);
-} 
-
-/* AI */
 .ai {
-    max-width: 70%;
-    padding: 12px;
-    border-radius: 14px; 
+    background: rgba(255,255,255,.075);
+    border: 1px solid rgba(255,255,255,.13);
+    backdrop-filter: blur(14px);
+}
 
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.12); 
+.ai p:first-child {
+    margin-top: 0;
+}
 
-    backdrop-filter: blur(10px);
-} 
+.ai p:last-child {
+    margin-bottom: 0;
+}
 
-/* =========================
-   INPUT
-========================= */
 #inputBar {
-    display: flex;
-    padding: 12px; 
-
-    background: rgba(255,255,255,0.05);
-    backdrop-filter: blur(12px); 
-
-    border-top: 1px solid rgba(255,255,255,0.1);
-} 
+    display: flex;
+    gap: 10px;
+    padding: 14px;
+    background: rgba(255,255,255,.06);
+    border-top: 1px solid rgba(255,255,255,.12);
+    backdrop-filter: blur(16px);
+}
 
 #input {
-    flex: 1;
-    padding: 12px; 
+    flex: 1;
+    padding: 14px;
+    border: none;
+    outline: none;
+    border-radius: 14px;
+    color: white;
+    background: rgba(255,255,255,.1);
+}
 
-    border-radius: 12px;
-    border: none;
-    outline: none; 
-
-    background: rgba(255,255,255,0.08);
-    color: white;
-} 
+#input::placeholder {
+    color: rgba(255,255,255,.55);
+}
 
 button {
-    margin-left: 10px;
-    padding: 12px 16px; 
+    border: none;
+    border-radius: 14px;
+    padding: 0 18px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    background: linear-gradient(90deg, #ff1f3d, #7c1023);
+}
 
-    background: linear-gradient(90deg, #7c3aed, #06b6d4);
-    border: none; 
+button:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+}
 
-    color: white;
-    border-radius: 12px; 
+::-webkit-scrollbar {
+    width: 8px;
+}
 
-    cursor: pointer;
-} 
+::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,.18);
+    border-radius: 20px;
+}
 
+@media (max-width: 760px) {
+    body {
+        flex-direction: column;
+    }
+
+    #sidebar {
+        width: 100%;
+        height: auto;
+        max-height: 210px;
+        border-right: none;
+        border-bottom: 1px solid rgba(255,255,255,.1);
+    }
+
+    #brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-align: left;
+        padding: 4px 0 10px;
+    }
+
+    .logo {
+        width: 58px;
+        height: 58px;
+    }
+
+    #brand h2 {
+        margin: 0;
+    }
+
+    #newChat {
+        margin-bottom: 8px;
+    }
+
+    #sessions {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+    }
+
+    .session {
+        white-space: nowrap;
+        min-width: fit-content;
+    }
+
+    #messages {
+        padding: 16px;
+    }
+
+    .message {
+        max-width: 92%;
+    }
+
+    #welcome {
+        margin-top: 6vh;
+    }
+
+    .hero-core {
+        width: 110px;
+        height: 110px;
+    }
+
+    #welcome h1 {
+        font-size: 30px;
+    }
+}
 </style>
-</head> 
+</head>
 
-<body> 
+<body>
 
-<!-- SIDEBAR -->
-<div id="sidebar"> 
+<aside id="sidebar">
+    <div id="brand">
+        <img src="assets/Fabclaw-core.png" class="logo" alt="Fabclaw AI Core">
+        <div>
+            <h2>FABCLAW AI</h2>
+            <p>Living AI Companion</p>
+        </div>
+    </div>
 
-    <div id="logoBox">
-        <img src="fabclaw.png" class="logo">
-    </div> 
+    <div id="newChat">＋ New Chat</div>
+    <div id="sessions"></div>
+</aside>
 
-    <div id="newChat">➕ New Chat</div>
-    <div id="sessions"></div>
-</div> 
+<main id="chat">
+    <div id="messages">
+        <div id="welcome">
+            <img src="assets/Fabclaw-core.png" class="hero-core" alt="Fabclaw AI Core">
+            <h1>FABCLAW AI</h1>
+            <p>Ask anything. Build faster. Think sharper.</p>
+        </div>
+    </div>
 
-<!-- CHAT -->
-<div id="chat"> 
+    <div id="inputBar">
+        <input id="input" placeholder="Ask Fabclaw AI..." autocomplete="off" />
+        <button id="sendBtn" onclick="sendMessage()">Send</button>
+    </div>
+</main>
 
-    <div id="messages"></div> 
-
-    <div id="inputBar">
-        <input id="input" placeholder="Ask Fabclaw AI..." />
-        <button onclick="sendMessage()">Send</button>
-    </div> 
-
-</div> 
-
-<script> 
-
+<script>
 const BASE_URL = "https://fabclaw-ai-1.onrender.com";
-const user_id = "test123"; 
+const user_id = "test123";
 
-let currentSession = null; 
+let currentSession = localStorage.getItem("fabclaw_current_session") || null;
+let localSessions = JSON.parse(localStorage.getItem("fabclaw_sessions") || "[]");
 
-/* LOAD SESSIONS */
-async function loadSessions() {
-    const res = await fetch(`${BASE_URL}/sessions/${user_id}`);
-    const data = await res.json(); 
+function saveSessions() {
+    localStorage.setItem("fabclaw_sessions", JSON.stringify(localSessions));
+    if (currentSession) {
+        localStorage.setItem("fabclaw_current_session", currentSession);
+    }
+}
 
-    const box = document.getElementById("sessions");
-    box.innerHTML = ""; 
+function renderSessions() {
+    const box = document.getElementById("sessions");
+    box.innerHTML = "";
 
-    data.sessions.forEach(s => {
-        const div = document.createElement("div");
-        div.className = "session";
-        div.innerText = s;
-        div.onclick = () => loadChat(s);
-        box.appendChild(div);
-    });
-} 
+    localSessions.forEach(sessionId => {
+        const div = document.createElement("div");
+        div.className = "session" + (sessionId === currentSession ? " active" : "");
+        div.innerText = sessionId;
+        div.onclick = () => loadChat(sessionId);
+        box.appendChild(div);
+    });
+}
 
-/* NEW CHAT */
 async function newChat() {
-    const res = await fetch(`${BASE_URL}/sessions/${user_id}`, {
-        method: "POST"
-    }); 
+    try {
+        const res = await fetch(`${BASE_URL}/sessions/${user_id}`, {
+            method: "POST"
+        });
 
-    const data = await res.json(); 
+        const text = await res.text();
 
-    currentSession = data.session_id; 
+        let sessionId;
+        try {
+            const data = JSON.parse(text);
+            sessionId = data.session_id || data.session || data.id || text;
+        } catch {
+            sessionId = text.replaceAll('"', "");
+        }
 
-    loadSessions();
-    loadChat(currentSession);
-} 
+        currentSession = sessionId || `session-${Date.now()}`;
 
-document.getElementById("newChat").onclick = newChat; 
+        if (!localSessions.includes(currentSession)) {
+            localSessions.unshift(currentSession);
+        }
 
-/* LOAD CHAT */
+        saveSessions();
+        renderSessions();
+        clearMessages();
+
+    } catch (err) {
+        currentSession = `local-${Date.now()}`;
+        localSessions.unshift(currentSession);
+        saveSessions();
+        renderSessions();
+        clearMessages();
+        render("ai", "Created a local session because the backend session endpoint did not respond.");
+    }
+}
+
+document.getElementById("newChat").onclick = newChat;
+
+function clearMessages() {
+    document.getElementById("messages").innerHTML = "";
+}
+
 async function loadChat(sessionId) {
-    currentSession = sessionId; 
+    currentSession = sessionId;
+    saveSessions();
+    renderSessions();
+    clearMessages();
 
-    const res = await fetch(`${BASE_URL}/history/${user_id}/${sessionId}`);
-    const data = await res.json(); 
+    try {
+        const res = await fetch(`${BASE_URL}/history/${user_id}/${sessionId}`);
+        const text = await res.text();
 
-    const box = document.getElementById("messages");
-    box.innerHTML = ""; 
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch {
+            data = text;
+        }
 
-    data.history.forEach(m => {
-        render(m.role, m.content);
-    });
-} 
+        if (data && Array.isArray(data.history)) {
+            data.history.forEach(m => render(m.role || "ai", m.content || ""));
+        } else if (Array.isArray(data)) {
+            data.forEach(m => render(m.role || "ai", m.content || String(m)));
+        } else if (typeof data === "string" && data.trim()) {
+            render("ai", data);
+        } else {
+            showWelcome();
+        }
 
-/* RENDER */
+    } catch (err) {
+        render("ai", "Could not load this chat history yet.");
+    }
+}
+
+function showWelcome() {
+    document.getElementById("messages").innerHTML = `
+        <div id="welcome">
+            <img src="assets/Fabclaw-core.png" class="hero-core" alt="Fabclaw AI Core">
+            <h1>FABCLAW AI</h1>
+            <p>Ask anything. Build faster. Think sharper.</p>
+        </div>
+    `;
+}
+
+function removeWelcome() {
+    const welcome = document.getElementById("welcome");
+    if (welcome) welcome.remove();
+}
+
 function render(role, text) {
-    const box = document.getElementById("messages"); 
+    removeWelcome();
 
-    const div = document.createElement("div");
-    div.className = role; 
+    const box = document.getElementById("messages");
+    const div = document.createElement("div");
 
-    div.innerHTML = role === "ai"
-        ? marked.parse(text)
-        : text; 
+    div.className = `message ${role === "user" ? "user" : "ai"}`;
 
-    box.appendChild(div);
-    box.scrollTop = box.scrollHeight;
-} 
+    if (role === "user") {
+        div.textContent = text;
+    } else {
+        div.innerHTML = marked.parse(text || "");
+    }
 
-/* SEND MESSAGE (STREAM) */
-async function sendMessage() { 
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+}
 
-    const input = document.getElementById("input");
-    const text = input.value;
-    if (!text.trim()) return; 
+async function sendMessage() {
+    const input = document.getElementById("input");
+    const sendBtn = document.getElementById("sendBtn");
+    const message = input.value.trim();
 
-    input.value = ""; 
+    if (!message) return;
 
-    if (!currentSession) await newChat(); 
+    if (!currentSession) {
+        await newChat();
+    }
 
-    render("user", text); 
+    input.value = "";
+    render("user", message);
 
-    const box = document.getElementById("messages"); 
+    sendBtn.disabled = true;
+    sendBtn.innerText = "Thinking...";
 
-    const aiDiv = document.createElement("div");
-    aiDiv.className = "ai";
-    aiDiv.innerText = "";
-    box.appendChild(aiDiv); 
+    try {
+        const res = await fetch(`${BASE_URL}/chat`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                user_id,
+                session_id: currentSession,
+                message
+            })
+        });
 
-    const res = await fetch(`${BASE_URL}/chat-stream`, {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({
-            user_id,
-            session_id: currentSession,
-            message: text
-        })
-    }); 
+        const text = await res.text();
 
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder(); 
+        let reply;
+        try {
+            const data = JSON.parse(text);
+            reply = data.reply || data.response || data.message || data.content || text;
+        } catch {
+            reply = text.replace(/^"|"$/g, "");
+        }
 
-    let fullText = ""; 
+        render("ai", reply || "No response received.");
 
-    while (true) {
-        const { value, done } = await reader.read();
-        if (done) break; 
+    } catch (err) {
+        render("ai", "Connection error. Please check backend CORS or Render status.");
+    } finally {
+        sendBtn.disabled = false;
+        sendBtn.innerText = "Send";
+    }
+}
 
-        const chunk = decoder.decode(value);
-        const lines = chunk.split("\n"); 
+document.getElementById("input").addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+        sendMessage();
+    }
+});
 
-        for (let line of lines) {
-            if (line.startsWith("data: ")) { 
+renderSessions();
 
-                const token = line.replace("data: ", "");
-                if (token === "[DONE]") return; 
-
-                fullText += token;
-                aiDiv.innerHTML = marked.parse(fullText); 
-
-                box.scrollTop = box.scrollHeight;
-            }
-        }
-    }
-} 
-
-loadSessions(); 
-
-</script> 
+if (currentSession) {
+    loadChat(currentSession);
+} else {
+    showWelcome();
+}
+</script>
 
 </body>
-  </html>
+</html>
+```
