@@ -129,7 +129,7 @@ body::before {
     flex: 1;
     overflow-y: auto;
     padding: 24px;
-    padding-bottom: 180px;
+    padding-bottom: 24px;
 }
 
 #welcome {
@@ -195,11 +195,7 @@ body::before {
     border-top: 1px solid rgba(255,255,255,.12);
     backdrop-filter: blur(16px);
 
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 999;
+    flex-shrink: 0;
 }
 
 #input {
@@ -262,15 +258,12 @@ button:disabled {
     flex: 1;
     min-height: 0;
     padding: 16px;
-    padding-bottom: 240px;
+    padding-bottom: 24px;
 }
 
 #inputBar {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 999;
+    position: static;
+    flex-shrink: 0;
 }
     #brand {
         display: flex;
