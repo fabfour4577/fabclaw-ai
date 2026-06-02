@@ -241,11 +241,30 @@ button:disabled {
     #sidebar {
         width: 100%;
         height: auto;
-        max-height: 210px;
+        max-height: 180px;
+        flex-shrink: 0;
         border-right: none;
         border-bottom: 1px solid rgba(255,255,255,.1);
     }
+#chat {
+    flex: 1;
+    min-height: 0;
+}
 
+#messages {
+    flex: 1;
+    min-height: 0;
+    padding: 16px;
+    padding-bottom: 90px;
+}
+
+#inputBar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+}
     #brand {
         display: flex;
         align-items: center;
