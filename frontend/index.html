@@ -240,6 +240,37 @@ button:disabled {
     border-radius: 20px;
 }
 
+.message-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.copy-btn {
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 10px;
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.14);
+    color: rgba(255,255,255,.8);
+    cursor: pointer;
+}
+
+.copy-btn:hover {
+    background: rgba(255,31,61,.25);
+}
+
+pre {
+    background: rgba(0,0,0,.45);
+    padding: 14px;
+    border-radius: 12px;
+    overflow-x: auto;
+}
+
+code {
+    font-family: monospace;
+}
+
 @media (max-width: 768px) {
     body {
         flex-direction: column;
@@ -474,7 +505,7 @@ function removeWelcome() {
     if (welcome) welcome.remove();
 }
 
-function render(role, text) {
+function render(role, text, options = {}) {
     removeWelcome();
 
     const box = document.getElementById("messages");
@@ -482,14 +513,48 @@ function render(role, text) {
 
     div.className = `message ${role === "user" ? "user" : "ai"}`;
 
+    if (options.thinking) {
+        div.innerHTML = `<em>Fabclaw is thinking...</em>`;
+        box.appendChild(div);
+        box.scrollTop = box.scrollHeight;
+        return div;
+    }
+
     if (role === "user") {
         div.textContent = text;
     } else {
-        div.innerHTML = marked.parse(text || "");
+        const content = document.createElement("div");
+        content.className = "ai-content";
+        content.innerHTML = marked.parse(text || "");
+
+        const actions = document.createElement("div");
+        actions.className = "message-actions";
+
+        const copyBtn = document.createElement("button");
+        copyBtn.className = "copy-btn";
+        copyBtn.type = "button";
+        copyBtn.innerText = "Copy";
+
+        copyBtn.onclick = async () => {
+            try {
+                await navigator.clipboard.writeText(text || "");
+                copyBtn.innerText = "Copied";
+                setTimeout(() => copyBtn.innerText = "Copy", 1200);
+            } catch {
+                copyBtn.innerText = "Failed";
+                setTimeout(() => copyBtn.innerText = "Copy", 1200);
+            }
+        };
+
+        actions.appendChild(copyBtn);
+        div.appendChild(content);
+        div.appendChild(actions);
     }
 
     box.appendChild(div);
     box.scrollTop = box.scrollHeight;
+
+    return div;
 }
 
 async function sendMessage() {
