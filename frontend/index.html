@@ -574,6 +574,8 @@ async function sendMessage() {
     sendBtn.disabled = true;
     sendBtn.innerText = "Thinking...";
 
+    const thinkingDiv = render("ai", "", { thinking: true });
+
     try {
         const res = await fetch(`${BASE_URL}/chat`, {
             method: "POST",
@@ -597,15 +599,17 @@ async function sendMessage() {
             reply = text.replace(/^"|"$/g, "");
         }
 
+        thinkingDiv.remove();
         render("ai", reply || "No response received.");
 
     } catch (err) {
+        thinkingDiv.remove();
         render("ai", "Connection error. Please check backend CORS or Render status.");
     } finally {
         sendBtn.disabled = false;
         sendBtn.innerText = "Send";
     }
-}
+    }
 
 document.getElementById("input").addEventListener("keydown", e => {
     if (e.key === "Enter") {
