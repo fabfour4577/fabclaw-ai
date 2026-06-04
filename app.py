@@ -3,73 +3,71 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import OpenAI
 
+from datetime import datetime
 import redis
 import os
 import json
 import uuid
 
-# ======================================
-# APP
-# ======================================
+app = FastAPI(title="Fabclaw AI", version="0.2.0")
 
-app = FastAPI()
-
-# ✅ CORS (fixes frontend + fetch issues)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5500",
-        "http://127.0.0.1:5500",
-        "*"
-    ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ======================================
-# OPENAI
-# ======================================
-
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-# ======================================
-# REDIS (SAFE INIT)
-# ======================================
 
 redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
 
 try:
     r = redis.from_url(redis_url, decode_responses=True)
     r.ping()
-    print("✅ Redis connected")
+    print("Redis connected")
 except Exception as e:
-    print("❌ Redis failed, using in-memory fallback:", e)
+    print("Redis failed, using memory fallback:", e)
     r = None
 
-# fallback memory (if Redis fails)
 memory_store = {}
 
-# ======================================
-# CONFIG
-# ======================================
-
-MODEL = "gpt-4o-mini"
-SYSTEM_PROMPT = "You are Fabclaw AI, a helpful assistant."
+MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 MAX_HISTORY = 20
 
-# ======================================
-# REQUEST MODEL
-# ======================================
 
 class ChatRequest(BaseModel):
     user_id: str
     session_id: str
     message: str
 
-# ======================================
-# HELPERS
-# ======================================
+
+def build_system_prompt():
+    today = datetime.now().strftime("%B %d, %Y")
+
+    return f"""
+You are Fabclaw AI, a helpful AI assistant for productivity, coding, research support, business intelligence, and creative problem-solving.
+
+Identity rules:
+- Your name is Fabclaw AI.
+- Do not claim to be GPT-3.
+- Do not guess your exact model identity.
+- If asked what model you are, say: "I am Fabclaw AI, powered by OpenAI through this app."
+
+Date and knowledge rules:
+- Today's date is {today}.
+- You do not currently have live web browsing.
+- If the user asks for current events, recent news, live prices, current brand/product availability, or anything after your available knowledge, clearly say that live web search is needed.
+- Do not pretend to browse the internet.
+
+Response style:
+- Be direct, useful, and accurate.
+- Use Markdown when helpful.
+- Use code blocks for code.
+- If unsure, say so clearly.
+""".strip()
+
 
 def get_history(key):
     if r:
@@ -77,82 +75,84 @@ def get_history(key):
         return json.loads(data) if data else []
     return memory_store.get(key, [])
 
+
 def save_history(key, history):
     if r:
         r.set(key, json.dumps(history), ex=60 * 60 * 24 * 7)
     else:
         memory_store[key] = history
 
+
 def session_key(user_id, session_id):
     return f"chat:{user_id}:{session_id}"
 
-# ======================================
-# ROOT
-# ======================================
 
 @app.get("/")
 def root():
-    return {"status": "Fabclaw AI running 🚀"}
+    return {
+        "status": "Fabclaw AI running",
+        "model": MODEL,
+    }
 
-# ======================================
-# CHAT
-# ======================================
+
+@app.get("/health")
+def health():
+    return {
+        "status": "ok",
+        "redis": "connected" if r else "fallback mode",
+        "model": MODEL,
+    }
+
 
 @app.post("/chat")
 def chat(req: ChatRequest):
-
     try:
         key = session_key(req.user_id, req.session_id)
 
         history = get_history(key)
-
         history.append({"role": "user", "content": req.message})
         history = history[-MAX_HISTORY:]
 
         response = client.chat.completions.create(
             model=MODEL,
             messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                *history
-            ]
+                {"role": "system", "content": build_system_prompt()},
+                *history,
+            ],
+            temperature=0.7,
         )
 
-        reply = response.choices[0].message.content
+        reply = response.choices[0].message.content or ""
 
         history.append({"role": "assistant", "content": reply})
+        history = history[-MAX_HISTORY:]
 
         save_history(key, history)
 
         return {
             "reply": reply,
-            "session_id": req.session_id
+            "session_id": req.session_id,
+            "model": MODEL,
         }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# ======================================
-# SESSIONS
-# ======================================
 
 @app.post("/sessions/{user_id}")
 def create_session(user_id: str):
     return {
-        "session_id": str(uuid.uuid4())[:8]
+        "session_id": str(uuid.uuid4())[:8],
     }
 
-# ======================================
-# HISTORY
-# ======================================
 
 @app.get("/history/{user_id}/{session_id}")
 def history(user_id: str, session_id: str):
     key = session_key(user_id, session_id)
-    return {"history": get_history(key)}
+    return {
+        "history": get_history(key),
+    }
 
-# ======================================
-# DEBUG
-# ======================================
 
 @app.get("/test-redis")
 def test_redis():
@@ -160,14 +160,6 @@ def test_redis():
         if r:
             r.set("ping", "pong")
             return {"redis": r.get("ping")}
-        else:
-            return {"redis": "using memory fallback"}
+        return {"redis": "using memory fallback"}
     except Exception as e:
         return {"error": str(e)}
-
-@app.get("/health")
-def health():
-    return {
-        "status": "ok",
-        "redis": "connected" if r else "fallback mode"
-    }
