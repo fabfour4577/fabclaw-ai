@@ -43,6 +43,7 @@ body::before {
 #sidebar {
     width: 280px;
     z-index: 2;
+    position: relative;
     display: flex;
     flex-direction: column;
     padding: 18px 12px;
@@ -120,6 +121,7 @@ body::before {
 #chat {
     flex: 1;
     z-index: 2;
+    position: relative;
     display: flex;
     flex-direction: column;
     min-width: 0;
@@ -276,15 +278,15 @@ code {
     inset: 0;
     overflow: hidden;
     pointer-events: none;
-    z-index: 1;
+    z-index: 0;
 }
 
 .orb {
     position: absolute;
     border-radius: 50%;
-    filter: blur(10px);
-    opacity: .42;
-    background: radial-gradient(circle, rgba(255,255,255,.95), rgba(255,215,0,.55), rgba(255,31,61,.18),transparent 72%);
+    filter: blur(8px);
+    opacity: .60;
+    background: radial-gradient(circle, rgba(255,255,255, 1), rgba(255,235,120,.75), rgba(255,31,61,.22),transparent 72%);
     animation: orbFloat 18s ease-in-out infinite, orbPulse 6s ease-in-out infinite;
 }
 
@@ -292,6 +294,9 @@ code {
     width: 180px;
     height: 180px;
 
+    top: 10%;
+    left: 5%;
+    
     box-shadow:
         0 0 30px rgba(255,255,255,.8),
         0 0 60px rgba(255,215,0,.5),
@@ -338,6 +343,22 @@ code {
     animation-delay: 5s;
 }
 
+.orb7 {
+    width: 130px;
+    height: 130px;
+    top: 40%;
+    right: 5%;
+    animation-delay: 6s;
+}
+
+.orb8 {
+    width: 85px;
+    height: 85px;
+    bottom: 30%;
+    left: 30%;
+    animation-delay: 7s;
+}
+    
 @keyframes orbFloat {
     0% {
         transform: translate(0, 0) scale(1);
@@ -462,6 +483,8 @@ code {
     <div class="orb orb4"></div>
     <div class="orb orb5"></div>
     <div class="orb orb6"></div>
+    <div class="orb orb7"></div>
+    <div class="orb orb8"></div>
 </div>
 <aside id="sidebar">
     <div id="brand">
