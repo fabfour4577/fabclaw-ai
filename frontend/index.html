@@ -282,18 +282,20 @@ code {
 .orb {
     position: absolute;
     border-radius: 50%;
-    filter: blur(18px);
-    opacity: .28;
-    background: radial-gradient(circle, rgba(255,31,61,.85), rgba(124,16,35,.25), transparent 70%);
+    filter: blur(10px);
+    opacity: .42;
+    background: radial-gradient(circle, rgba(255,255,255,.95), rgba(255,215,0,.55), rgba(255,31,61,.18),transparent 72%);
     animation: orbFloat 18s ease-in-out infinite, orbPulse 6s ease-in-out infinite;
 }
 
 .orb1 {
-    width: 130px;
-    height: 130px;
-    top: 10%;
-    left: 18%;
-    animation-delay: 0s;
+    width: 180px;
+    height: 180px;
+
+    box-shadow:
+        0 0 30px rgba(255,255,255,.8),
+        0 0 60px rgba(255,215,0,.5),
+        0 0 100px rgba(255,31,61,.25);
 }
 
 .orb2 {
