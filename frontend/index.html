@@ -271,6 +271,98 @@ code {
     font-family: monospace;
 }
 
+#orbLayer {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(18px);
+    opacity: .28;
+    background: radial-gradient(circle, rgba(255,31,61,.85), rgba(124,16,35,.25), transparent 70%);
+    animation: orbFloat 18s ease-in-out infinite, orbPulse 6s ease-in-out infinite;
+}
+
+.orb1 {
+    width: 130px;
+    height: 130px;
+    top: 10%;
+    left: 18%;
+    animation-delay: 0s;
+}
+
+.orb2 {
+    width: 90px;
+    height: 90px;
+    top: 28%;
+    right: 12%;
+    animation-delay: 2s;
+}
+
+.orb3 {
+    width: 160px;
+    height: 160px;
+    bottom: 18%;
+    left: 8%;
+    animation-delay: 4s;
+}
+
+.orb4 {
+    width: 70px;
+    height: 70px;
+    bottom: 12%;
+    right: 22%;
+    animation-delay: 1s;
+}
+
+.orb5 {
+    width: 110px;
+    height: 110px;
+    top: 55%;
+    left: 45%;
+    animation-delay: 3s;
+}
+
+.orb6 {
+    width: 55px;
+    height: 55px;
+    top: 15%;
+    right: 38%;
+    animation-delay: 5s;
+}
+
+@keyframes orbFloat {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+    25% {
+        transform: translate(35px, -45px) scale(1.08);
+    }
+    50% {
+        transform: translate(-30px, -25px) scale(.96);
+    }
+    75% {
+        transform: translate(20px, 35px) scale(1.04);
+    }
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+}
+
+@keyframes orbPulse {
+    0%, 100% {
+        opacity: .16;
+    }
+    50% {
+        opacity: .36;
+    }
+    }
+    
 @media (max-width: 768px) {
     body {
         flex-direction: column;
@@ -361,7 +453,14 @@ code {
 </head>
 
 <body>
-
+<div id="orbLayer">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+    <div class="orb orb4"></div>
+    <div class="orb orb5"></div>
+    <div class="orb orb6"></div>
+</div>
 <aside id="sidebar">
     <div id="brand">
         <img src="assets/Fabclaw-core.png" class="logo" alt="Fabclaw AI Core">
