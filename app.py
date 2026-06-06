@@ -150,6 +150,7 @@ response = client.chat.completions.create(
             "reply": reply,
             "session_id": req.session_id,
             "model": MODEL,
+            "mode": req.mode,
         }
 
     except Exception as e:
