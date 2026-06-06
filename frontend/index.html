@@ -386,6 +386,27 @@ code {
     }
     }
     
+#modeBar {
+    display: flex;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(255,255,255,.04);
+    border-top: 1px solid rgba(255,255,255,.08);
+}
+
+.mode-btn {
+    padding: 8px 14px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    background: rgba(255,255,255,.08);
+    color: white;
+}
+
+.mode-btn.active {
+    background: linear-gradient(90deg, #ff1f3d, #7c1023);
+}  
+    
 @media (max-width: 768px) {
     body {
         flex-direction: column;
@@ -508,6 +529,11 @@ code {
         </div>
     </div>
 
+ <div id="modeBar">
+    <button id="chatMode" class="mode-btn active">Chat</button>
+    <button id="researchMode" class="mode-btn">Research</button>
+ </div>   
+    
     <div id="inputBar">
         <input id="input" placeholder="Ask Fabclaw AI..." autocomplete="off" />
         <button id="sendBtn" onclick="sendMessage()">Send</button>
@@ -521,6 +547,20 @@ const user_id = "test123";
 let currentSession = localStorage.getItem("fabclaw_current_session") || null;
 let localSessions = JSON.parse(localStorage.getItem("fabclaw_sessions") || "[]");
 
+let currentMode = "chat";
+
+document.getElementById("chatMode").onclick = () => {
+    currentMode = "chat";
+    document.getElementById("chatMode").classList.add("active");
+    document.getElementById("researchMode").classList.remove("active");
+};
+
+document.getElementById("researchMode").onclick = () => {
+    currentMode = "research";
+    document.getElementById("researchMode").classList.add("active");
+    document.getElementById("chatMode").classList.remove("active");
+};
+    
 function saveSessions() {
     localStorage.setItem("fabclaw_sessions", JSON.stringify(localSessions));
     if (currentSession) {
@@ -711,6 +751,7 @@ async function sendMessage() {
                 user_id,
                 session_id: currentSession,
                 message
+                mode: currentMode
             })
         });
 
