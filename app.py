@@ -41,6 +41,7 @@ class ChatRequest(BaseModel):
     user_id: str
     session_id: str
     message: str
+    mode: str = "chat"
 
 
 def build_system_prompt():
@@ -113,14 +114,30 @@ def chat(req: ChatRequest):
         history.append({"role": "user", "content": req.message})
         history = history[-MAX_HISTORY:]
 
-        response = client.chat.completions.create(
-            model=MODEL,
-            messages=[
-                {"role": "system", "content": build_system_prompt()},
-                *history,
-            ],
-            temperature=0.7,
-        )
+system_prompt = build_system_prompt()
+
+if req.mode == "research":
+    system_prompt += """
+
+Research Mode Instructions:
+- Respond like a professional research analyst.
+- Structure answers using:
+  Summary
+  Key Findings
+  Analysis
+  Recommendations
+- Be detailed and organized.
+- Use bullet points when useful.
+"""
+
+response = client.chat.completions.create(
+    model=MODEL,
+    messages=[
+        {"role": "system", "content": system_prompt},
+        *history,
+    ],
+    temperature=0.7,
+)
 
         reply = response.choices[0].message.content or ""
 
