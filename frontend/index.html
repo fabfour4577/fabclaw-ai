@@ -594,11 +594,22 @@ function renderSessions() {
     const box = document.getElementById("sessions");
     box.innerHTML = "";
 
-    localSessions.forEach(sessionId => {
+    localSessions = localSessions.filter(sessionId => {
+        return sessionId && String(sessionId).trim().length > 0;
+    });
+
+    saveSessions();
+
+    localSessions.forEach((sessionId, index) => {
+        const cleanId = String(sessionId).trim();
+
         const div = document.createElement("div");
-        div.className = "session" + (sessionId === currentSession ? " active" : "");
-        div.innerText = sessionId;
-        div.onclick = () => loadChat(sessionId);
+        div.className = "session" + (cleanId === currentSession ? " active" : "");
+
+        div.innerText = `Chat ${index + 1}`;
+        div.title = cleanId;
+
+        div.onclick = () => loadChat(cleanId);
         box.appendChild(div);
     });
 }
