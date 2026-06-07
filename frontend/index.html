@@ -103,13 +103,15 @@ body::before {
 }
 
 .session {
-    padding: 11px 12px;
+    padding: 11px 14px;
     margin-bottom: 8px;
     border-radius: 12px;
     cursor: pointer;
-    background: rgba(255,255,255,.06);
-    color: rgba(255,255,255,.85);
+    background: rgba(255,255,255,.14);
+    color: #fff;
     font-size: 14px;
+    border: 1px solid rgba(255,255,255,.18);
+    min-width: fit-content;
 }
 
 .session:hover,
@@ -387,11 +389,18 @@ code {
     }
     
 #modeBar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 76px;
+    z-index: 999;
+
     display: flex;
     gap: 10px;
     padding: 10px 14px;
     background: rgba(255,255,255,.04);
     border-top: 1px solid rgba(255,255,255,.08);
+    backdrop-filter: blur(16px);
 }
 
 .mode-btn {
@@ -428,7 +437,7 @@ code {
     flex: 1;
     min-height: 0;
     padding: 16px;
-    padding-bottom: 320px;
+    padding-bottom: 390px;
 }
 
 #inputBar {
