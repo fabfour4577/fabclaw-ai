@@ -423,6 +423,15 @@ code {
 .mode-btn.active {
     background: linear-gradient(90deg, #ff1f3d, #7c1023);
 }  
+.close-tab {
+    margin-left: 8px;
+    color: rgba(255,255,255,.75);
+    font-weight: bold;
+}
+
+.close-tab:hover {
+    color: #ff1f3d;
+}  
     
 @media (max-width: 768px) {
     body {
@@ -604,6 +613,19 @@ function saveSessions() {
     }
 }
 
+function deleteSession(sessionId) {
+    localSessions = localSessions.filter(s => s !== sessionId);
+
+    if (currentSession === sessionId) {
+        currentSession = null;
+        localStorage.removeItem("fabclaw_current_session");
+        showWelcome();
+    }
+
+    saveSessions();
+    renderSessions();
+}
+
 function renderSessions() {
     const box = document.getElementById("sessions");
     box.innerHTML = "";
@@ -620,13 +642,22 @@ function renderSessions() {
         const div = document.createElement("div");
         div.className = "session" + (cleanId === currentSession ? " active" : "");
 
-        div.innerText = `Chat ${index + 1}`;
-        div.title = cleanId;
+        div.innerHTML = `
+            <span>Chat ${index + 1}</span>
+            <span class="close-tab">×</span>
+        `;
 
+        div.title = cleanId;
         div.onclick = () => loadChat(cleanId);
+
+        div.querySelector(".close-tab").onclick = (e) => {
+            e.stopPropagation();
+            deleteSession(cleanId);
+        };
+
         box.appendChild(div);
     });
-}
+        }
 
 async function newChat() {
     try {
