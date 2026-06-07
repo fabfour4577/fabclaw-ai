@@ -423,6 +423,13 @@ code {
 .mode-btn.active {
     background: linear-gradient(90deg, #ff1f3d, #7c1023);
 }  
+
+#attachBtn {
+    width: 48px;
+    padding: 0;
+    font-size: 20px;
+    }
+    
 .close-tab {
     margin-left: 10px;
     padding: 4px 8px;
@@ -579,9 +586,17 @@ code {
  </div>   
     
     <div id="inputBar">
-        <input id="input" placeholder="Ask Fabclaw AI..." autocomplete="off" />
-        <button id="sendBtn" onclick="sendMessage()">Send</button>
+    <button id="attachBtn" type="button">📎</button>
+
+    <input id="fileInput" type="file" hidden />
+
+    <input id="input"
+           placeholder="Ask Fabclaw AI..."
+           autocomplete="off" />
+
+    <button id="sendBtn" onclick="sendMessage()">Send</button>
     </div>
+    
 </main>
 
 <script>
@@ -633,6 +648,17 @@ function deleteSession(sessionId) {
     renderSessions();
 }
 
+    document.getElementById("attachBtn").onclick = () => {
+    document.getElementById("fileInput").click();
+};
+
+    document.getElementById("fileInput").onchange = () => {
+    const file = document.getElementById("fileInput").files[0];
+
+    if (file) {
+        render("user", `📎 Attached file: ${file.name}`);
+    }
+};
 function renderSessions() {
     const box = document.getElementById("sessions");
     box.innerHTML = "";
