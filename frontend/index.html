@@ -424,14 +424,21 @@ code {
     background: linear-gradient(90deg, #ff1f3d, #7c1023);
 }  
 .close-tab {
-    margin-left: 8px;
-    color: rgba(255,255,255,.75);
+    margin-left: 10px;
+    padding: 4px 8px;
+    border-radius: 50%;
+    color: rgba(255,255,255,.85);
     font-weight: bold;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .close-tab:hover {
-    color: #ff1f3d;
-}  
+    background: rgba(255,31,61,.35);
+    color: #fff;
+}
     
 @media (max-width: 768px) {
     body {
@@ -650,10 +657,19 @@ function renderSessions() {
         div.title = cleanId;
         div.onclick = () => loadChat(cleanId);
 
-        div.querySelector(".close-tab").onclick = (e) => {
-            e.stopPropagation();
-            deleteSession(cleanId);
-        };
+        const closeBtn = div.querySelector(".close-tab");
+
+        closeBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          deleteSession(cleanId);
+});
+
+        closeBtn.addEventListener("touchstart", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          deleteSession(cleanId);
+});
 
         box.appendChild(div);
     });
