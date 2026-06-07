@@ -607,7 +607,8 @@ let currentSession = localStorage.getItem("fabclaw_current_session") || null;
 let localSessions = JSON.parse(localStorage.getItem("fabclaw_sessions") || "[]");
 
 let currentMode = "chat";
-
+let selectedFile = null;
+    
 document.addEventListener("DOMContentLoaded", () => {
 
     const chatBtn = document.getElementById("chatMode");
@@ -653,12 +654,13 @@ function deleteSession(sessionId) {
 };
 
     document.getElementById("fileInput").onchange = () => {
-    const file = document.getElementById("fileInput").files[0];
+    selectedFile = document.getElementById("fileInput").files[0];
 
-    if (file) {
-        render("user", `📎 Attached file: ${file.name}`);
+    if (selectedFile) {
+        render("user", `📎 Attached file: ${selectedFile.name}`);
     }
 };
+    
 function renderSessions() {
     const box = document.getElementById("sessions");
     box.innerHTML = "";
@@ -860,7 +862,41 @@ async function sendMessage() {
     sendBtn.innerText = "Thinking...";
 
     const thinkingDiv = render("ai", "", { thinking: true });
+    
+    if (selectedFile) {
+    const formData = new FormData();
+    formData.append("file", selectedFile);
 
+    const uploadRes = await fetch(`${BASE_URL}/upload`, {
+        method: "POST",
+        body: formData
+    });
+
+    const uploadData = await uploadRes.json();
+
+    selectedFile = null;
+    document.getElementById("fileInput").value = "";
+
+    thinkingDiv.remove();
+
+    render(
+        "ai",
+        `File uploaded successfully.
+
+**Filename:** ${uploadData.filename}
+
+**Type:** ${uploadData.content_type}
+
+**Size:** ${uploadData.size} bytes
+
+**Preview:**
+${uploadData.preview}`
+    );
+
+    sendBtn.disabled = false;
+    sendBtn.innerText = "Send";
+    return;
+}
     try {
         const res = await fetch(`${BASE_URL}/chat`, {
             method: "POST",
