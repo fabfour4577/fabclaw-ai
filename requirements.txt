@@ -3,3 +3,4 @@ uvicorn
 openai
 redis
 pydantic
+python-multipart
