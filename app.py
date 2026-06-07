@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import OpenAI
@@ -168,7 +168,32 @@ def history(user_id: str, session_id: str):
         "history": get_history(key),
     }
 
+@app.post("/upload")
+async def upload_file(file: UploadFile = File(...)):
+    try:
+        filename = file.filename or "uploaded-file"
+        content_type = file.content_type or "unknown"
 
+        raw = await file.read()
+        size = len(raw)
+
+        preview = ""
+
+        if content_type.startswith("text/") or filename.endswith(".txt"):
+            preview = raw.decode("utf-8", errors="ignore")[:3000]
+        else:
+            preview = "File received. Text extraction for this file type will be added next."
+
+        return {
+            "filename": filename,
+            "content_type": content_type,
+            "size": size,
+            "preview": preview,
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+        
 @app.get("/test-redis")
 def test_redis():
     try:
