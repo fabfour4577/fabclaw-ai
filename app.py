@@ -36,13 +36,11 @@ memory_store = {}
 MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 MAX_HISTORY = 20
 
-
 class ChatRequest(BaseModel):
     user_id: str
     session_id: str
     message: str
     mode: str = "chat"
-
 
 def build_system_prompt():
     today = datetime.now().strftime("%B %d, %Y")
