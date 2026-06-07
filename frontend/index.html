@@ -549,17 +549,25 @@ let localSessions = JSON.parse(localStorage.getItem("fabclaw_sessions") || "[]")
 
 let currentMode = "chat";
 
-document.getElementById("chatMode").onclick = () => {
-    currentMode = "chat";
-    document.getElementById("chatMode").classList.add("active");
-    document.getElementById("researchMode").classList.remove("active");
-};
+document.addEventListener("DOMContentLoaded", () => {
 
-document.getElementById("researchMode").onclick = () => {
-    currentMode = "research";
-    document.getElementById("researchMode").classList.add("active");
-    document.getElementById("chatMode").classList.remove("active");
-};
+    const chatBtn = document.getElementById("chatMode");
+    const researchBtn = document.getElementById("researchMode");
+
+    chatBtn.onclick = () => {
+        currentMode = "chat";
+
+        chatBtn.classList.add("active");
+        researchBtn.classList.remove("active");
+    };
+
+    researchBtn.onclick = () => {
+        currentMode = "research";
+
+        researchBtn.classList.add("active");
+        chatBtn.classList.remove("active");
+    };
+});
     
 function saveSessions() {
     localStorage.setItem("fabclaw_sessions", JSON.stringify(localSessions));
@@ -750,7 +758,7 @@ async function sendMessage() {
             body: JSON.stringify({
                 user_id,
                 session_id: currentSession,
-                message
+                message,
                 mode: currentMode
             })
         });
