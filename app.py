@@ -112,10 +112,10 @@ def chat(req: ChatRequest):
         history.append({"role": "user", "content": req.message})
         history = history[-MAX_HISTORY:]
 
-system_prompt = build_system_prompt()
+        system_prompt = build_system_prompt()
 
-if req.mode == "research":
-    system_prompt += """
+        if req.mode == "research":
+            system_prompt += """
 
 Research Mode Instructions:
 - Respond like a professional research analyst.
@@ -128,14 +128,14 @@ Research Mode Instructions:
 - Use bullet points when useful.
 """
 
-response = client.chat.completions.create(
-    model=MODEL,
-    messages=[
-        {"role": "system", "content": system_prompt},
-        *history,
-    ],
-    temperature=0.7,
-)
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                *history,
+            ],
+            temperature=0.7,
+        )
 
         reply = response.choices[0].message.content or ""
 
@@ -153,7 +153,6 @@ response = client.chat.completions.create(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.post("/sessions/{user_id}")
 def create_session(user_id: str):
