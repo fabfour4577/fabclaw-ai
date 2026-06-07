@@ -103,26 +103,29 @@ body::before {
 }
 
 .session {
-    padding: 10px 14px;
-    margin-bottom: 8px;
+    flex: 0 0 auto;
+
+    padding: 10px 16px;
+
     border-radius: 12px;
-    cursor: pointer;
 
-    background: rgba(255,255,255,.14);
-    border: 1px solid rgba(255,255,255,.18);
+    background: rgba(255,255,255,.08);
 
-    color: #fff;
-    font-size: 14px;
-    font-weight: 500;
+    color: rgba(255,255,255,.9);
+
+    font-size: 13px;
 
     white-space: nowrap;
-    min-width: fit-content;
+
+    border: 1px solid rgba(255,255,255,.12);
 }
 
-.session:hover,
 .session.active {
-    background: linear-gradient(90deg,#ff1f3d,#7c1023);
-    border-color: rgba(255,31,61,.5);
+    background: linear-gradient(
+        90deg,
+        #ff1f3d,
+        #7c1023
+    );
 }
 
 #chat {
@@ -475,10 +478,21 @@ code {
     }
 
     #sessions {
-        display: flex;
-        gap: 8px;
-        overflow-x: auto;
-    }
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    padding: 10px 6px;
+    min-height: 52px;
+    align-items: center;
+
+    scrollbar-width: none;
+}
+
+#sessions::-webkit-scrollbar {
+    display: none;
+}
 
     .session {
         white-space: nowrap;
