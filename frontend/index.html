@@ -849,14 +849,16 @@ async function sendMessage() {
     const sendBtn = document.getElementById("sendBtn");
     const message = input.value.trim();
 
-    if (!message) return;
+    if (!message && !selectedFile) return;
 
     if (!currentSession) {
         await newChat();
     }
 
     input.value = "";
+    if (message) {
     render("user", message);
+    }
 
     sendBtn.disabled = true;
     sendBtn.innerText = "Thinking...";
