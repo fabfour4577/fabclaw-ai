@@ -4,3 +4,4 @@ openai
 redis
 pydantic
 python-multipart
+pypdf
