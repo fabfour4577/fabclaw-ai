@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import OpenAI
 from io import BytesIO
-from pyPDF2 import PdfReader
+from PyPDF2 import PdfReader
 
 from datetime import datetime
 import redis
@@ -185,25 +185,25 @@ async def upload_file(file: UploadFile = File(...)):
             preview = raw.decode("utf-8", errors="ignore")[:3000]
 
         elif content_type == "application/pdf":
-             pdf_reader = PdfReader(io.BytesIO(raw))
-             text = ""
+            pdf_reader = PdfReader(io.BytesIO(raw))
+            text = ""
 
-        for page in pdf_reader.pages:
-            extracted = page.extract_text()
-        if extracted:
-            text += extracted + "\n"
+            for page in pdf_reader.pages[:10]:
+                extracted = page.extract_text()
+                if extracted:
+                    text += extracted + "\n"
 
-        preview = text[:3000]
+            preview = text[:3000] if text else "No text found in PDF."
 
         else:
-          preview = "File received. Text extraction for this file type will be added next."
+            preview = "File received. Text extraction for this file type will be added next."
 
         return {
             "filename": filename,
             "content_type": content_type,
             "size": size,
             "preview": preview,
-    }
+        }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
