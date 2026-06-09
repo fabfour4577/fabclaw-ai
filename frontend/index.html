@@ -873,7 +873,16 @@ async function sendMessage() {
     method: "POST",
     body: formData
     });
-
+        
+    if (!uploadRes.ok) {
+    
+    const errorText = await uploadRes.text();
+    thinkingDiv.remove();
+    render("ai", `Upload failed: ${errorText}`);
+    sendBtn.disabled = false;
+    sendBtn.innerText = "Send";
+    return;
+    }
     const uploadData = await uploadRes.json();
         
 console.log("UPLOAD DATA:", uploadData);
