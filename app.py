@@ -185,17 +185,23 @@ async def upload_file(file: UploadFile = File(...)):
             preview = raw.decode("utf-8", errors="ignore")[:3000]
 
         elif content_type == "application/pdf":
-            pdf_reader = PdfReader(io.BytesIO(raw))
-            text = ""
+             try:
+             pdf_reader = PdfReader(io.BytesIO(raw))
+             text = ""
 
-            for page in pdf_reader.pages[:10]:
-                extracted = page.extract_text()
-                if extracted:
-                    text += extracted + "\n"
+             max_pages = min(3, len(pdf_reader.pages))
 
-            preview = text[:3000] if text else "No text found in PDF."
+        for i in range(max_pages):
+            extracted = pdf_reader.pages[i].extract_text()
+            if extracted:
+                text += extracted + "\n"
 
-        else:
+        preview = text[:3000] if text else "No text found in the first 3 pages of this PDF."
+
+    except Exception as pdf_error:
+        preview = f"PDF received, but text extraction failed: {str(pdf_error)}"
+
+        else:⁸
             preview = "File received. Text extraction for this file type will be added next."
 
         return {
