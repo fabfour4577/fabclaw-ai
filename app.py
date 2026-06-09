@@ -196,9 +196,9 @@ async def upload_file(file: UploadFile = File(...)):
                     extracted = pdf_reader.pages[i].extract_text()
                     if extracted:
                         text += extracted + "\n"
-
-                preview = text[:3000] if text else "No text found in the first 3 pages of this PDF."
-
+                clean_text = " ".join(text.split())
+                preview = clean_text[:3000] if clean_text else "No text found in the first 3 pages of this PDF."
+                
             except Exception as pdf_error:
                 preview = f"PDF received, but text extraction failed: {str(pdf_error)}"
 
