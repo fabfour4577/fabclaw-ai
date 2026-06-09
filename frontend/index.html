@@ -875,7 +875,8 @@ async function sendMessage() {
     });
 
     const uploadData = await uploadRes.json();
-
+        
+console.log("UPLOAD DATA:", uploadData);
     if (!uploadRes.ok) {
     throw new Error(uploadData.detail || "Upload failed.");
     }
@@ -886,18 +887,18 @@ async function sendMessage() {
     thinkingDiv.remove();
 
     render(
-        "ai",
-        `File uploaded successfully.
+    "ai",
+    `File uploaded successfully.
 
-**Filename:** ${uploadData.filename}
+**Filename:** ${uploadData.filename || "unknown"}
 
-**Type:** ${uploadData.content_type}
+**Type:** ${uploadData.content_type || "unknown"}
 
-**Size:** ${uploadData.size} bytes
+**Size:** ${uploadData.size || 0} bytes
 
 **Preview:**
-${uploadData.preview}`
-    );
+${uploadData.preview || "No preview available."}`
+);
 
     sendBtn.disabled = false;
     sendBtn.innerText = "Send";
