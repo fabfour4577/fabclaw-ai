@@ -205,12 +205,34 @@ async def upload_file(file: UploadFile = File(...)):
         else:
             preview = "File received. Text extraction for this file type will be added next."
 
+        summary = ""
+
+        if preview and not preview.startswith("File received"):
+           ai_response = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+            {
+                "role": "system",
+                "content": "You are Fabclaw AI. Summarize uploaded documents clearly and professionally."
+            },
+            {
+                "role": "user",
+                "content": f"Summarize this uploaded file:\n\n{preview}"
+            }
+        ],
+        temperature=0.4,
+    )
+
+    summary = ai_response.choices[0].message.content or ""
+
+    
         return {
             "filename": filename,
             "content_type": content_type,
             "size": size,
             "preview": preview,
-        }
+            "summary": summary,
+}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
