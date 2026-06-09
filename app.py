@@ -201,7 +201,7 @@ async def upload_file(file: UploadFile = File(...)):
     except Exception as pdf_error:
         preview = f"PDF received, but text extraction failed: {str(pdf_error)}"
 
-        else:⁸
+        else:
             preview = "File received. Text extraction for this file type will be added next."
 
         return {
