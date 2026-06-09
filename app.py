@@ -2,6 +2,8 @@ from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import OpenAI
+from io import BytesIO
+from pypdf import PdfReader
 
 from datetime import datetime
 import redis
@@ -179,10 +181,24 @@ async def upload_file(file: UploadFile = File(...)):
 
         preview = ""
 
-        if content_type.startswith("text/") or filename.endswith(".txt"):
-            preview = raw.decode("utf-8", errors="ignore")[:3000]
-        else:
-            preview = "File received. Text extraction for this file type will be added next."
+     if content_type.startswith("text/") or filename.endswith(".txt"):
+        preview = raw.decode("utf-8", errors="ignore")[:3000]
+
+     elif content_type == "application/pdf":
+
+         reader = PdfReader(BytesIO(raw))
+
+    text = ""
+
+    for page in reader.pages[:10]:
+        page_text = page.extract_text()
+        if page_text:
+            text += page_text + "\n"
+
+        preview = text[:3000] if text else "No text found in PDF."
+
+    else:
+        preview = "File received. Text extraction for this file type will be added next."
 
         return {
             "filename": filename,
