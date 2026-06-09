@@ -196,9 +196,10 @@ async def upload_file(file: UploadFile = File(...)):
                     extracted = pdf_reader.pages[i].extract_text()
                     if extracted:
                         text += extracted + "\n"
+
                 clean_text = " ".join(text.split())
                 preview = clean_text[:3000] if clean_text else "No text found in the first 3 pages of this PDF."
-                
+
             except Exception as pdf_error:
                 preview = f"PDF received, but text extraction failed: {str(pdf_error)}"
 
@@ -207,32 +208,35 @@ async def upload_file(file: UploadFile = File(...)):
 
         summary = ""
 
-        if preview and not preview.startswith("File received"):
-           ai_response = client.chat.completions.create(
-            model=MODEL,
-            messages=[
-            {
-                "role": "system",
-                "content": "You are Fabclaw AI. Summarize uploaded documents clearly and professionally."
-            },
-            {
-                "role": "user",
-                "content": f"Summarize this uploaded file:\n\n{preview}"
-            }
-        ],
-        temperature=0.4,
-    )
+        if preview and not preview.startswith("File received") and not preview.startswith("PDF received"):
+            try:
+                ai_response = client.chat.completions.create(
+                    model=MODEL,
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": "You are Fabclaw AI. Summarize uploaded documents clearly and professionally."
+                        },
+                        {
+                            "role": "user",
+                            "content": f"Summarize this uploaded file:\n\n{preview}"
+                        }
+                    ],
+                    temperature=0.4,
+                )
 
-    summary = ai_response.choices[0].message.content or ""
+                summary = ai_response.choices[0].message.content or ""
 
-    
+            except Exception as summary_error:
+                summary = f"Summary could not be generated: {str(summary_error)}"
+
         return {
             "filename": filename,
             "content_type": content_type,
             "size": size,
             "preview": preview,
             "summary": summary,
-}
+        }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
