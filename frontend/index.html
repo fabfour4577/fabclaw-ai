@@ -905,9 +905,11 @@ console.log("UPLOAD DATA:", uploadData);
 
 **Size:** ${uploadData.size || 0} bytes
 
+**Summary:**
+${uploadData.summary || "No summary available."}
+
 **Preview:**
-${uploadData.preview || "No preview available."}`
-);
+${uploadData.preview || "No preview available."}
 
     sendBtn.disabled = false;
     sendBtn.innerText = "Send";
