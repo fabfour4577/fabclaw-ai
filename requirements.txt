@@ -4,4 +4,4 @@ openai
 redis
 pydantic
 python-multipart
-pyPDF2
+PyPDF2 
