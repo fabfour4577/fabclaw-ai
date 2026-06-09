@@ -870,11 +870,15 @@ async function sendMessage() {
     formData.append("file", selectedFile);
 
     const uploadRes = await fetch(`${BASE_URL}/upload`, {
-        method: "POST",
-        body: formData
+    method: "POST",
+    body: formData
     });
 
     const uploadData = await uploadRes.json();
+
+    if (!uploadRes.ok) {
+    throw new Error(uploadData.detail || "Upload failed.");
+    }
 
     selectedFile = null;
     document.getElementById("fileInput").value = "";
