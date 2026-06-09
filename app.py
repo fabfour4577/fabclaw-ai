@@ -9,6 +9,7 @@ from datetime import datetime
 import redis
 import os
 import json
+import io
 import uuid
 
 app = FastAPI(title="Fabclaw AI", version="0.2.0")
