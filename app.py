@@ -172,7 +172,11 @@ def history(user_id: str, session_id: str):
     }
 
 @app.post("/upload")
-async def upload_file(file: UploadFile = File(...)):
+async def upload_file(
+    file: UploadFile = File(...),
+    user_id: str = "test123",
+    session_id: str = "default"
+):
     try:
         filename = file.filename or "uploaded-file"
         content_type = file.content_type or "unknown"
@@ -229,8 +233,17 @@ async def upload_file(file: UploadFile = File(...)):
 
             except Exception as summary_error:
                 summary = f"Summary could not be generated: {str(summary_error)}"
+key = session_key(user_id, session_id)
+history = get_history(key)
 
-        return {
+history.append({
+    "role": "system",
+    "content": f"Uploaded file: {filename}\n\nExtracted content:\n{preview}"
+})
+
+save_history(key, history)
+        
+           return {
             "filename": filename,
             "content_type": content_type,
             "size": size,
