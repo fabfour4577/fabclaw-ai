@@ -233,17 +233,18 @@ async def upload_file(
 
             except Exception as summary_error:
                 summary = f"Summary could not be generated: {str(summary_error)}"
-key = session_key(user_id, session_id)
-history = get_history(key)
 
-history.append({
-    "role": "system",
-    "content": f"Uploaded file: {filename}\n\nExtracted content:\n{preview}"
-})
+        key = session_key(user_id, session_id)
+        history = get_history(key)
 
-save_history(key, history)
-        
-           return {
+        history.append({
+            "role": "system",
+            "content": f"Uploaded file: {filename}\n\nExtracted content:\n{preview}\n\nSummary:\n{summary}"
+        })
+
+        save_history(key, history)
+
+        return {
             "filename": filename,
             "content_type": content_type,
             "size": size,
