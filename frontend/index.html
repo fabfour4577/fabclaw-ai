@@ -856,48 +856,43 @@ async function sendMessage() {
     }
 
     input.value = "";
+
     if (message) {
-    render("user", message);
+        render("user", message);
     }
 
     sendBtn.disabled = true;
     sendBtn.innerText = "Thinking...";
 
     const thinkingDiv = render("ai", "", { thinking: true });
-    
+
     if (selectedFile) {
-    const formData = new FormData();
-    formData.append("file", selectedFile);
+        try {
+            const formData = new FormData();
+            formData.append("file", selectedFile);
 
-    const uploadRes = await fetch(`${BASE_URL}/upload`, {
-    method: "POST",
-    body: formData
-    });
-        
-    if (!uploadRes.ok) {
-    
-    const errorText = await uploadRes.text();
-    thinkingDiv.remove();
-    render("ai", `Upload failed: ${errorText}`);
-    sendBtn.disabled = false;
-    sendBtn.innerText = "Send";
-    return;
-    }
-    const uploadData = await uploadRes.json();
-        
-console.log("UPLOAD DATA:", uploadData);
-    if (!uploadRes.ok) {
-    throw new Error(uploadData.detail || "Upload failed.");
-    }
+            const uploadRes = await fetch(`${BASE_URL}/upload`, {
+                method: "POST",
+                body: formData
+            });
 
-    selectedFile = null;
-    document.getElementById("fileInput").value = "";
+            if (!uploadRes.ok) {
+                const errorText = await uploadRes.text();
+                thinkingDiv.remove();
+                render("ai", `Upload failed: ${errorText}`);
+                return;
+            }
 
-    thinkingDiv.remove();
+            const uploadData = await uploadRes.json();
 
-    render(
-    "ai",
-    `File uploaded successfully.
+            selectedFile = null;
+            document.getElementById("fileInput").value = "";
+
+            thinkingDiv.remove();
+
+            render(
+                "ai",
+                `File uploaded successfully.
 
 **Filename:** ${uploadData.filename || "unknown"}
 
@@ -909,12 +904,22 @@ console.log("UPLOAD DATA:", uploadData);
 ${uploadData.summary || "No summary available."}
 
 **Preview:**
-${uploadData.preview || "No preview available."}
+${uploadData.preview || "No preview available."}`
+            );
 
-    sendBtn.disabled = false;
-    sendBtn.innerText = "Send";
-    return;
-}
+            return;
+
+        } catch (err) {
+            thinkingDiv.remove();
+            render("ai", `Upload error: ${err.message}`);
+            return;
+
+        } finally {
+            sendBtn.disabled = false;
+            sendBtn.innerText = "Send";
+        }
+    }
+
     try {
         const res = await fetch(`${BASE_URL}/chat`, {
             method: "POST",
