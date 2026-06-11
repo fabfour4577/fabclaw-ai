@@ -239,10 +239,22 @@ async def upload_file(
 
         history.append({
             "role": "system",
-            "content": f"Uploaded file: {filename}\n\nExtracted content:\n{preview}\n\nSummary:\n{summary}"
-        })
+            "content": f"Uploaded file context: {filename}\n\nExtracted content:\n{preview}\n\nSummary:\n{summary}"
+})
 
-        save_history(key, history)
+         history.append({
+            "role": "assistant",
+            "content": (
+                f"File uploaded successfully.\n\n"
+                f"**Filename:** {filename}\n\n"
+                f"**Type:** {content_type}\n\n"
+                f"**Size:** {size} bytes\n\n"
+                f"**Summary:**\n{summary or 'No summary available.'}\n\n"
+                f"**Preview:**\n{preview or 'No preview available.'}"
+    )
+})
+
+save_history(key, history)
 
         return {
             "filename": filename,
