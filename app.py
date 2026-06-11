@@ -170,7 +170,7 @@ def history(user_id: str, session_id: str):
     return {
         "history": get_history(key),
     }
-
+    
 @app.post("/upload")
 async def upload_file(
     file: UploadFile = File(...),
@@ -185,6 +185,7 @@ async def upload_file(
         size = len(raw)
 
         preview = ""
+        summary = ""
 
         if content_type.startswith("text/") or filename.endswith(".txt"):
             preview = raw.decode("utf-8", errors="ignore")[:3000]
@@ -209,8 +210,6 @@ async def upload_file(
 
         else:
             preview = "File received. Text extraction for this file type will be added next."
-
-        summary = ""
 
         if preview and not preview.startswith("File received") and not preview.startswith("PDF received"):
             try:
@@ -240,9 +239,9 @@ async def upload_file(
         history.append({
             "role": "system",
             "content": f"Uploaded file context: {filename}\n\nExtracted content:\n{preview}\n\nSummary:\n{summary}"
-})
+        })
 
-         history.append({
+        history.append({
             "role": "assistant",
             "content": (
                 f"File uploaded successfully.\n\n"
@@ -251,10 +250,10 @@ async def upload_file(
                 f"**Size:** {size} bytes\n\n"
                 f"**Summary:**\n{summary or 'No summary available.'}\n\n"
                 f"**Preview:**\n{preview or 'No preview available.'}"
-    )
-})
+            )
+        })
 
-save_history(key, history)
+        save_history(key, history)
 
         return {
             "filename": filename,
