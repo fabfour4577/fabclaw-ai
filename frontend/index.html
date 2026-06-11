@@ -786,7 +786,20 @@ function showWelcome() {
         </div>
     `;
 }
+    
+function loadSessions() {
+    try {
+        localSessions = JSON.parse(
+            localStorage.getItem("fabclaw_sessions")
+        ) || [];
+    } catch {
+        localSessions = [];
+    }
 
+    currentSession =
+        localStorage.getItem("fabclaw_current_session");
+                   }
+    
 function removeWelcome() {
     const welcome = document.getElementById("welcome");
     if (welcome) welcome.remove();
@@ -963,6 +976,29 @@ document.getElementById("input").addEventListener("keydown", e => {
     if (e.key === "Enter") {
         sendMessage();
     }
+});
+    window.addEventListener("DOMContentLoaded", async () => {
+
+    loadSessions();
+
+    console.log(
+        "Saved Sessions:",
+        localStorage.getItem("fabclaw_sessions")
+    );
+
+    console.log(
+        "Current Session:",
+        localStorage.getItem("fabclaw_current_session")
+    );
+
+    renderSessions();
+
+    if (currentSession) {
+        await loadChat(currentSession);
+    } else {
+        showWelcome();
+    }
+
 });
 
 renderSessions();
