@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import OpenAI
@@ -174,8 +174,8 @@ def history(user_id: str, session_id: str):
 @app.post("/upload")
 async def upload_file(
     file: UploadFile = File(...),
-    user_id: str = "test123",
-    session_id: str = "default"
+    user_id: str = Form(...),
+    session_id: str = Form(...)
 ):
     try:
         filename = file.filename or "uploaded-file"
